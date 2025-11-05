@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraVoice AI Studio</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="AuraVoice AI">
+    <meta name="apple-mobile-web-app-title" content="AuraVoice AI">
+    <meta name="theme-color" content="#121212">
+    <meta name="description" content="Next-generation AI voice cloning and text-to-speech studio.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1E1E1E;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #E0E0E0;
+            --text-secondary: #A0A0A0;
+            --accent-primary: #00A3FF;
+            --accent-primary-hover: #007fcc;
+            --accent-secondary: #333;
+            --danger: #FF4D4D;
+            --success: #39D98A;
+            --border-radius: 12px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body { padding: 1rem; max-width: 700px; margin: 2rem auto; }
+        .container { display: flex; flex-direction: column; gap: 2rem; }
+
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        header p { color: var(--text-secondary); }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            border: 1px solid var(--bg-tertiary);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover { transform: translateY(-3px); }
+
+        h2 { margin-bottom: 1.5rem; font-size: 1.25rem; border-left: 3px solid var(--accent-primary); padding-left: 0.75rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); }
+        textarea, select, input[type="text"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea:focus, select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 163, 255, 0.2);
+        }
+        textarea { resize: vertical; min-height: 140px; }
+
+        .button-group { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .button {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            gap: 0.5rem; padding: 0.8rem 1.5rem;
+            border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .button:disabled { cursor: not-allowed; opacity: 0.5; }
+        .button.primary { background-color: var(--accent-primary); color: white; }
+        .button.primary:hover:not(:disabled) { background-color: var(--accent-primary-hover); transform: translateY(-2px); }
+        .button.secondary { background-color: var(--bg-tertiary); color: var(--text-primary); }
+        .button.secondary:hover:not(:disabled) { background-color: #383838; }
+        .button.danger { background-color: var(--danger); color: white; }
+        .button svg { width: 1.2em; height: 1.2em; fill: currentColor; }
+
+        #synthesize-btn { width: 100%; }
+
+        .playback-controls { display: flex; flex-direction: column; gap: 1.5rem; }
+        .playback-controls .controls { display: flex; align-items: center; gap: 1rem; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: var(--bg-tertiary); outline: none; border-radius: 3px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: var(--accent-primary); cursor: pointer; border-radius: 50%; border: 3px solid var(--bg-secondary); }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-primary); cursor: pointer; border-radius: 50%; border: 3px solid var(--bg-secondary); }
+        .time-display { font-family: monospace; font-size: 0.9rem; color: var(--text-secondary); }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        .modal.is-visible { display: flex; }
+        .modal-content { background-color: var(--bg-secondary); padding: 2rem; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative; border: 1px solid var(--bg-tertiary); box-shadow: var(--shadow); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+        
+        .notification {
+            position: fixed;
+            bottom: 1.5rem; left: 50%;
+            transform: translateX(-50%);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            color: white; z-index: 2000;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.4s ease-out;
+            opacity: 0;
+            font-weight: 600;
+        }
+        @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        .notification.is-visible { opacity: 1; }
+        .notification.success { background-color: var(--success); }
+        .notification.error { background-color: var(--danger); }
+        .notification.info { background-color: var(--accent-secondary); }
+
+        .progress-bar { width: 100%; height: 6px; background-color: var(--bg-tertiary); border-radius: 3px; overflow: hidden; margin: 1rem 0; }
+        .progress-bar-inner { height: 100%; width: 100%; background-image: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-primary-hover) 50%, var(--accent-primary) 100%); animation: indeterminate-progress 2s infinite linear; }
+        @keyframes indeterminate-progress { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AuraVoice AI Studio</h1>
+            <p>Bring your text to life with next-generation voice synthesis.</p>
+        </header>
+        
+        <div class="card">
+            <h2>Synthesis Engine</h2>
+            <div class="form-group">
+                <textarea id="text-input" rows="6" placeholder="Type or paste your script here..."></textarea>
+            </div>
+            <div id="synthesis-progress-container" style="display: none;">
+                <div class="progress-bar"><div class="progress-bar-inner"></div></div>
+            </div>
+            <div class="button-group">
+                <button id="synthesize-btn" class="button primary">
+                    <svg viewBox="0 0 20 20"><path d="M17.218,2.268L2.477,8.388C2.13,8.535,2.164,9.05,2.542,9.134L9.33,10.67l1.535,6.787c0.083,0.377,0.602,0.415,0.748,0.065l6.123-14.74C17.866,2.46,17.539,2.134,17.218,2.268 M3.92,8.641l11.772-4.89L9.535,9.909L3.92,8.641z M11.358,16.078l-1.268-5.613l6.157-6.157L11.358,16.078z"/></svg>
+                    <span>Generate Audio</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="card" id="playback-card" style="display: none;">
+            <h2>Playback & Download</h2>
+            <div class="playback-controls">
+                <audio id="audio-player" style="display: none;"></audio>
+                <div class="controls">
+                    <button id="play-pause-btn" class="button secondary" aria-label="Play">
+                        <svg id="play-icon" viewBox="0 0 20 20"><path d="M7 6l8 4-8 4V6z"/></svg>
+                        <svg id="pause-icon" viewBox="0 0 20 20" style="display: none;"><path d="M5 16h3V4H5v12zm7 0h3V4h-3v12z"/></svg>
+                    </button>
+                    <input type="range" id="seek-bar" value="0" min="0" max="100" step="0.1">
+                    <span id="time-display" class="time-display">00:00 / 00:00</span>
+                </div>
+                <div class="button-group">
+                    <a id="download-btn" href="#" class="button secondary" download>
+                        <svg viewBox="0 0 20 20"><path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/></svg>
+                        <span>Download WAV</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Voice Configuration</h2>
+            <div class="voice-management" style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: flex-end;">
+                <div class="form-group" style="margin: 0;">
+                    <label for="voice-select">Active Voice</label>
+                    <select id="voice-select"></select>
+                </div>
+                <div class="button-group">
+                    <button id="clone-voice-btn" class="button primary">Clone New Voice</button>
+                </div>
+            </div>
+            <div class="parameter-sliders" style="margin-top: 1.5rem;">
+                <div class="slider-group">
+                    <div class="label-value" style="display:flex; justify-content:space-between; margin-bottom: 0.5rem;"><label for="speed-slider">Speed</label><span id="speed-value">1.0x</span></div>
+                    <input type="range" id="speed-slider" min="0.5" max="2" value="1" step="0.1">
+                </div>
+                <div class="slider-group">
+                    <div class="label-value" style="display:flex; justify-content:space-between; margin-bottom: 0.5rem;"><label for="pitch-slider">Pitch</label><span id="pitch-value">1.0</span></div>
+                    <input type="range" id="pitch-slider" min="0.5" max="2" value="1" step="0.1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="clone-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close">&times;</button>
+            <h2>Create New Voice Profile</h2>
+            <p style="color: var(--text-secondary); margin-top: -1rem; margin-bottom: 1.5rem;">Upload a clear 10-30 second audio sample to create a new voice.</p>
+            <div id="tab-upload" class="tab-content active">
+                <label for="audio-file-input">Upload Audio Sample (WAV, MP3)</label>
+                <input type="file" id="audio-file-input" accept="audio/*" style="padding: 1rem; background: var(--bg-primary); border: 2px dashed var(--bg-tertiary); cursor: pointer;">
+            </div>
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="voice-name-input">Voice Name</label>
+                <input type="text" id="voice-name-input" placeholder="e.g., 'Project Narration Voice'">
+            </div>
+            <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="checkbox" id="consent-checkbox" style="width: auto;">
+                <label for="consent-checkbox" style="margin:0; color: var(--text-primary);">I have the rights to use this voice.</label>
+            </div>
+            <div class="button-group" style="margin-top: 2rem;">
+                <button id="create-voice-btn" class="button primary" disabled style="width: 100%;">Create Voice</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script>
+    (function() {
+        'use strict';
+        
+        const PLACEHOLDER_API_BASE = '';
+
+        const app = {
+            config: { apiBaseUrl: PLACEHOLDER_API_BASE },
+            state: { isSynthesizing: false, audioBlob: null, audioUrl: null, voices: [] },
+            ui: {},
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cacheDOMElements();
+            registerEventListeners();
+            initApp();
+        });
+
+        function cacheDOMElements() {
+            const ui = {};
+            const ids = [
+                'text-input', 'synthesize-btn', 'synthesis-progress-container', 'playback-card', 
+                'audio-player', 'play-pause-btn', 'play-icon', 'pause-icon', 'stop-btn', 'seek-bar', 
+                'time-display', 'download-btn', 'voice-select', 'clone-voice-btn', 'speed-slider', 
+                'speed-value', 'pitch-slider', 'pitch-value', 'clone-modal', 'audio-file-input', 
+                'voice-name-input', 'consent-checkbox', 'create-voice-btn'
+            ];
+            ids.forEach(id => ui[id.replace(/-(\w)/g, (m, p1) => p1.toUpperCase())] = document.getElementById(id));
+            ui.modalCloseBtns = document.querySelectorAll('.modal-close');
+            ui.notificationContainer = document.getElementById('notification-container');
+            app.ui = ui;
+        }
+        
+        function registerEventListeners() {
+            const ui = app.ui;
+            ui.synthesizeBtn.addEventListener('click', handleSynthesize);
+            ui.playPauseBtn.addEventListener('click', togglePlayPause);
+            ui.audioPlayer.addEventListener('timeupdate', updateSeekBar);
+            ui.audioPlayer.addEventListener('ended', onPlaybackEnd);
+            ui.seekBar.addEventListener('input', seekAudio);
+            ui.downloadBtn.addEventListener('click', downloadAudio);
+            ui.speedSlider.addEventListener('input', e => ui.speedValue.textContent = `${parseFloat(e.target.value).toFixed(1)}x`);
+            ui.pitchSlider.addEventListener('input', e => ui.pitchValue.textContent = parseFloat(e.target.value).toFixed(1));
+            ui.cloneVoiceBtn.addEventListener('click', () => ui.cloneModal.classList.add('is-visible'));
+            ui.modalCloseBtns.forEach(btn => btn.addEventListener('click', closeModal));
+            window.addEventListener('click', e => { if (e.target.classList.contains('modal')) closeModal(); });
+            [ui.audioFileInput, ui.voiceNameInput, ui.consentCheckbox].forEach(el => {
+                el.addEventListener('change', validateCreateVoiceForm);
+                el.addEventListener('input', validateCreateVoiceForm);
+            });
+            ui.createVoiceBtn.addEventListener('click', handleCreateVoice);
+        }
+
+        function initApp() {
+            loadVoices();
+            updateVoiceSelectionUI();
+        }
+
+        async function handleSynthesize() {
+            const text = app.ui.textInput.value.trim();
+            if (!text || app.state.isSynthesizing) return;
+            setSynthesizingState(true);
+            const selectedVoice = app.state.voices.find(v => v.id === app.ui.voiceSelect.value);
+            try {
+                const response = await api.synthesizeText({ text, voice_id: selectedVoice.backendVoiceId });
+                if (response && response.size > 0) {
+                    setupAudioPlayback(response);
+                    showNotification('Audio generated successfully!', 'success');
+                } else { throw new Error('API returned empty audio data.'); }
+            } catch (error) {
+                showNotification(`Synthesis failed: ${error.message}`, 'error');
+            } finally {
+                setSynthesizingState(false);
+            }
+        }
+        
+        async function handleCreateVoice() {
+            const voiceName = app.ui.voiceNameInput.value.trim();
+            const sampleFile = app.ui.audioFileInput.files[0];
+            if (!voiceName || !sampleFile || app.state.isSynthesizing) return;
+            setSynthesizingState(true);
+            try {
+                const result = await api.createVoiceClone({ name: voiceName, sample: sampleFile });
+                if (result && result.voice_id) {
+                    const newVoice = { id: 'custom-' + result.voice_id, name: voiceName, backendVoiceId: result.voice_id };
+                    app.state.voices.push(newVoice);
+                    saveVoicesToLocalStorage();
+                    updateVoiceSelectionUI(newVoice.id);
+                    showNotification(`Voice "${voiceName}" created!`, 'success');
+                    closeModal();
+                } else { throw new Error('API did not return a valid voice ID.'); }
+            } catch (error) {
+                showNotification(`Failed to create voice: ${error.message}`, 'error');
+            } finally {
+                setSynthesizingState(false);
+                resetCloneForm();
+            }
+        }
+
+        function loadVoices() {
+            const storedVoices = localStorage.getItem('auravoice-voices');
+            if (storedVoices) { app.state.voices = JSON.parse(storedVoices); } 
+            else {
+                app.state.voices = [
+                    { id: 'default-nova', name: 'Nova (Default Female)', backendVoiceId: '21m00Tcm4TlvDq8ikWAM' },
+                    { id: 'default-orion', name: 'Orion (Default Male)', backendVoiceId: 'AZnzlk1XvdvUeBnXmlld' },
+                ];
+                saveVoicesToLocalStorage();
+            }
+        }
+        function saveVoicesToLocalStorage() { localStorage.setItem('auravoice-voices', JSON.stringify(app.state.voices)); }
+        
+        function updateVoiceSelectionUI(selectedId = null) {
+            app.ui.voiceSelect.innerHTML = '';
+            app.state.voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.id;
+                option.textContent = voice.name;
+                app.ui.voiceSelect.appendChild(option);
+            });
+            if (selectedId) app.ui.voiceSelect.value = selectedId;
+        }
+
+        function setupAudioPlayback(blob) {
+            if (app.state.audioUrl) URL.revokeObjectURL(app.state.audioUrl);
+            app.state.audioBlob = blob;
+            app.state.audioUrl = URL.createObjectURL(blob);
+            app.ui.audioPlayer.src = app.state.audioUrl;
+            app.ui.playbackCard.style.display = 'block';
+            togglePlayPause(true);
+        }
+
+        function togglePlayPause(forcePlay = false) {
+            const isPaused = app.ui.audioPlayer.paused;
+            if ((isPaused && forcePlay) || isPaused) {
+                app.ui.audioPlayer.play().catch(e => showNotification('Playback failed.', 'error'));
+                app.ui.playIcon.style.display = 'none';
+                app.ui.pauseIcon.style.display = 'block';
+            } else {
+                app.ui.audioPlayer.pause();
+                app.ui.playIcon.style.display = 'block';
+                app.ui.pauseIcon.style.display = 'none';
+            }
+        }
+        
+        function onPlaybackEnd() {
+            app.ui.playIcon.style.display = 'block';
+            app.ui.pauseIcon.style.display = 'none';
+        }
+
+        function updateSeekBar() {
+            const player = app.ui.audioPlayer;
+            app.ui.seekBar.value = (player.currentTime / player.duration) * 100 || 0;
+            app.ui.timeDisplay.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration || 0)}`;
+        }
+        
+        function seekAudio() { app.ui.audioPlayer.currentTime = (app.ui.seekBar.value / 100) * app.ui.audioPlayer.duration; }
+
+        function downloadAudio() {
+            if (!app.state.audioUrl) { showNotification('No audio to download.', 'info'); return; }
+            app.ui.downloadBtn.href = app.state.audioUrl;
+        }
+
+        const api = {
+            async synthesizeText(params) {
+                const endpoint = `${app.config.apiBaseUrl}/api/server`;
+                const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+                if (!response.ok) { throw new Error(await response.text()); }
+                return await response.blob();
+            },
+            async createVoiceClone(params) {
+                const formData = new FormData();
+                formData.append('name', params.name);
+                formData.append('sample_file', params.sample, params.sample.name);
+                // **CRITICAL FIX**: This URL points to our serverless function correctly.
+                const endpoint = `${app.config.apiBaseUrl}/api/server?clone=true`; 
+                const response = await fetch(endpoint, { method: 'POST', body: formData });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Unknown server error');
+                }
+                return await response.json();
+            }
+        };
+
+        function setSynthesizingState(isSynthesizing) {
+            app.state.isSynthesizing = isSynthesizing;
+            app.ui.synthesizeBtn.disabled = isSynthesizing;
+            app.ui.createVoiceBtn.disabled = isSynthesizing;
+            app.ui.synthesisProgressContainer.style.display = isSynthesizing ? 'block' : 'none';
+        }
+        
+        function validateCreateVoiceForm() {
+            app.ui.createVoiceBtn.disabled = !(app.ui.voiceNameInput.value && app.ui.audioFileInput.files.length > 0 && app.ui.consentCheckbox.checked);
+        }
+        
+        function closeModal() { document.querySelectorAll('.modal.is-visible').forEach(m => m.classList.remove('is-visible')); }
+        function resetCloneForm() {
+            app.ui.voiceNameInput.value = '';
+            app.ui.audioFileInput.value = '';
+            app.ui.consentCheckbox.checked = false;
+            validateCreateVoiceForm();
+        }
+        function formatTime(s) { const min = Math.floor(s / 60); const sec = Math.floor(s % 60); return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`; }
+
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = message;
+            app.ui.notificationContainer.appendChild(notif);
+            setTimeout(() => { notif.classList.add('is-visible'); }, 10);
+            setTimeout(() => {
+                notif.classList.remove('is-visible');
+                notif.addEventListener('transitionend', () => notif.remove());
+            }, duration);
+        }
+    })();
+    </script>
+</body>
+</html>
